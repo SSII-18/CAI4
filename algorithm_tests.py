@@ -5,6 +5,8 @@ import camellia
 from CryptoPlus.Cipher import python_Serpent
 from Crypto import Random
 from Crypto.PublicKey import RSA
+import hmac
+import hashlib
 
 def generate_random_files():
     result = []
@@ -18,19 +20,38 @@ def test():
     algorithms = {'AES' : test_AES_128_GCM ,'CAMELLIA' : test_camellia_256_CBC , \
                   'SERPENT' : test_serpent_128_CBC ,'RSA' : test_RSA_2048_CBC}
     content = ''
+    hashStrings = ''
+    secretKey = b'DEFCON 5 activado'
     j = 0
     for i in range(4):
         content = '----------   ' + algorithms.keys()[i] + '   ----------\r\n\r\n\r\n'
         for file in files:
             j = j+1
             print('File ' + str(j))
+
+            #HMAC check before cipher
+            hashBefore = hmac.new(secretKey, file, hashlib.sha256)
+            hashStrings = hashStrings + '\r\n' + str(hashBefore)
+
             tiempo_cifrado, tiempo_descifrado, incremento_espacial = algorithms[algorithms.keys()[i]](file)
             content = content +  '----------\r\n' + \
             'Numero de bytes : ' + str(len(file)) + \
             'Tiempo de cifrado : ' + str(tiempo_cifrado*1000) + '\r\n' + \
             'Tiempo de descifrado : ' + str(tiempo_descifrado*1000) + '\r\n' + \
             'Incremento espacial : ' + str(incremento_espacial) + '\r\n\r\n'
+
+            #HMAC check after cipher
+            hashAfter = hmac.new(secretKey, file, hashlib.sha256)
+            if(hashBefore == hashAfter):
+                print('Integrity secured')
+            else:
+                print('Integrity violated')
+
         content = content + '\r\n'
+    with open('hashStrings.txt', 'w') as file:
+        file.write(hashStrings)
+        file.close()
+
     with open('results.txt', 'w') as file:
         file.write(content)
         file.close()
