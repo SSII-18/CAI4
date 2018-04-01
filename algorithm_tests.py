@@ -31,7 +31,7 @@ def test():
 
             #HMAC check before cipher
             hashBefore = hmac.new(secretKey, file, hashlib.sha256)
-            hashStrings = hashStrings + '\r\n' + str(hashBefore)
+            hashStrings = hashStrings + '\r\n' + 'File ' + j + ' : ' + str(hashBefore)
 
             tiempo_cifrado, tiempo_descifrado, incremento_espacial = algorithms[algorithms.keys()[i]](file)
             content = content +  '----------\r\n' + \
